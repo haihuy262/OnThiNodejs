@@ -10,6 +10,7 @@ const multer = require("multer");
 const XeMay = require("./models/XeMay");
 // Import thư viện mongoose để sử dụng trong kết nối cơ sở dữ liệu MongoDB
 const { default: mongoose } = require("mongoose");
+const xeMay = require("./models/XeMay");
 // Khai báo một biến port với giá trị là 5000
 const port = 5000;
 // Tạo một ứng dụng Express mới
@@ -84,6 +85,25 @@ app.get("/api/danhSachXeMay/xemay", async (req, res) => {
   }
 });
 
+app.get("/api/edit/:productID", async (req, res) => {
+  const productId = req.params.productId;
+  try {
+    const productToEdit = await xeMay.findOneAndUpdate({ _id: productId });
+    if (!productToEdit) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product not found." });
+    }
+    res.render("EditXeMay.ejs", { productToEdit });
+  } catch (error) {
+    console.error("Error retrieving product information:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error retrieving product information.",
+    });
+  }
+});
+
 // Thiết lập lưu trữ cho multer để lưu trữ hình ảnh
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -119,6 +139,20 @@ const uploadImagesMiddleware = (req, res, next) => {
   });
 };
 
+const uploadUpdateImagesMiddleware = (req, res, next) => {
+  // Sử dụng multer để xử lý tải lên, với tên trường là "anhXeMay" và giới hạn là 2 hình ảnh
+  upload.array("editAnhXeMay", 2)(req, res, function (err) {
+    // Nếu lỗi thuộc loại MulterError, trả về lỗi 500 và thông tin lỗi
+    if (err instanceof multer.MulterError) {
+      return res.status(500).json(err);
+    } // Nếu có lỗi không thuộc loại MulterError, trả về lỗi 500 và thông tin lỗi
+    else if (err) {
+      return res.status(500).json(err);
+    }
+    next(); // Chuyển tiếp nếu không có lỗi
+  });
+};
+
 // Controller xử lý khi đăng bài về xe máy
 const postXeMay = async (req, res) => {
   // Lấy đường dẫn và tên tệp hình ảnh từ danh sách hình ảnh được tải lên
@@ -138,6 +172,47 @@ const postXeMay = async (req, res) => {
 
 // Định nghĩa route POST để thêm mới thông tin về xe máy
 app.post("/api/addXeMay", uploadImagesMiddleware, postXeMay);
+
+const updateXe = async (req, res) => {
+  const productId = req.params.productID;
+  console.log("id", productId);
+  const avatarList = req.files.map((file) => file.filename);
+  // Lấy thông tin sản phẩm từ dữ liệu trong yêu cầu
+  const { tenXeMay, hangSanXuat, giaTien } = req.body;
+  try {
+    // Cập nhật thông tin sản phẩm trong cơ sở dữ liệu dựa trên productId
+    await xeMay.findByIdAndUpdate(productId, {
+      tenXeMay,
+      hangSanXuat,
+      giaTien,
+      anhXeMay: avatarList,
+    });
+    // Chuyển hướng người dùng đến trang "/listproducts" sau khi cập nhật thành công
+    res.redirect("/danhSachXeMay");
+  } catch (error) {
+    // Nếu có lỗi, in thông báo lỗi ra console và chuyển hướng người dùng đến trang "/listproducts"
+    console.error(error);
+    res.redirect("/danhSachXeMay");
+  }
+};
+app.post("/api/edit/:productID", uploadUpdateImagesMiddleware, updateXe);
+app.delete("/delete/:productId", async (req, res) => {
+  const productId = req.params.productId;
+  try {
+    const result = await xeMay.deleteOne({ _id: productId });
+
+    if (result.deletedCount === 1) {
+      res.json({ success: true, message: "Xoá sản phẩm thành công." });
+    } else {
+      res
+        .status(404)
+        .json({ success: false, message: "Không tìm thấy sản phẩm." });
+    }
+  } catch (error) {
+    console.error("Lỗi khi xoá sản phẩm:", error);
+    res.status(500).json({ success: false, message: "Lỗi khi xoá sản phẩm." });
+  }
+});
 
 // Lắng nghe yêu cầu trên cổng được chỉ định (port) và ghi log khi server bắt đầu lắng nghe
 app.listen(port, () => {
