@@ -33,7 +33,7 @@
             <th>Sửa</th>
           </tr>
         </thead>
-        <tbody></tbody>
+        <tbody id="productTableBody"></tbody>
       </table>
     </div>
     <script>
@@ -59,34 +59,48 @@
         });
       });
 
-      $(document).ready(async function () {
+      document.addEventListener("DOMContentLoaded", async () => {
         try {
-          const response = await $.ajax({
-            url: "/api/danhSachXeMay/xemay",
+          const response = await fetch("/api/danhSachXeMay/xemay", {
             method: "GET",
-            dataType: "json",
+            headers: {
+              "Content-Type": "application/json",
+            },
           });
 
-          renderProducts(response);
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+
+          const data = await response.json();
+
+          populateTable(data);
         } catch (error) {
-          console.error("Error fetching products:", error);
+          console.error("Error fetching data:", error);
         }
 
-        function renderProducts(xemays) {
-          const tableBody = $("#xeMayTable tbody");
+        function populateTable(data) {
+          const tableBody = document.getElementById("productTableBody");
 
-          xemays.forEach((xemay) => {
-            console.log(`${xemay.anhXeMay[0]}`);
-            const row = $("<tr>").html(`
-          <td><img src="images/${xemay.anhXeMay[0].filename}" alt="${xemay.tenXeMay}" style="width: 50px; height: 50px;">
-            <img src="images/${xemay.anhXeMay[1].filename}" alt="${xemay.tenXeMay}" style="width: 50px; height: 50px;"></td>
-          <td>${xemay.tenXeMay}</td>
-          <td>${xemay.giaTien}</td>
-          <td>${xemay.hangSanXuat}</td>
-          <td><a href="/delete/byId/${xemay._id}">Delete</a></td>
-          <td><a href="/edit/${xemay._id}">Edit</a></td>
-        `);
-            tableBody.append(row);
+          data.forEach((product) => {
+            const row = document.createElement("tr");
+            let avatarHTML = "";
+            if (Array.isArray(product.anhXeMay)) {
+              // Nếu avatar là một mảng (nhiều ảnh)
+              product.anhXeMay.forEach((image) => {
+                avatarHTML += `<img src="/images/${image}" style="width: 50px; height: 50px;">`;
+              });
+            } else {
+              // Nếu avatar là một chuỗi (một ảnh)
+              avatarHTML = `<img src="/images/${product.anhXeMay}" style="width: 50px; height: 50px;">`;
+            }
+            row.innerHTML = ` 
+            <td>${product.tenXeMay}</td>
+            <td>${product.hangSanXuat}</td>
+            <td>${avatarHTML}</td>
+            <td>${product.giaTien}</td>
+            `;
+            tableBody.appendChild(row);
           });
         }
       });

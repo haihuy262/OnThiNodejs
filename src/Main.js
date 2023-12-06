@@ -40,8 +40,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // Sử dụng middleware express.static để phục vụ các tệp tĩnh từ thư mục "public"
-app.use(express.static("public"));
-
+// app.use(express.static("public"));
+app.use("/images", express.static(path.join(__dirname, "public/images")));
 // Thiết lập view engine là "ejs"
 // View engine là công cụ giúp kết hợp dữ liệu và mẫu (template) để tạo ra các trang HTML dựa trên dữ liệu được truyền vào.
 app.set("view engine", "ejs");
@@ -121,24 +121,13 @@ const uploadImagesMiddleware = (req, res, next) => {
 
 // Controller xử lý khi đăng bài về xe máy
 const postXeMay = async (req, res) => {
-  // Lấy danh sách các tệp tin hình ảnh từ yêu cầu
-  const files = req.files;
   // Lấy đường dẫn và tên tệp hình ảnh từ danh sách hình ảnh được tải lên
-  const imagePaths = files.map((file) => {
-    // Lấy tên của tệp tin hình ảnh
-    const filename = file.filename;
-    // Tạo đối tượng chứa đường dẫn và tên tệp tin hình ảnh
-    return {
-      path: path.join(__dirname, "public/images", filename),
-      filename: filename,
-    };
-    // Kết quả của bước này là một mảng chứa thông tin đường dẫn và tên của tất cả các tệp tin hình ảnh
-  });
+  const avatarList = req.files.map((file) => file.filename);
   // Tạo đối tượng XeMay với thông tin từ yêu cầu và danh sách hình ảnh
   const xeMays = new XeMay({
     tenXeMay: req.body.tenXeMay,
     hangSanXuat: req.body.hangSanXuat,
-    anhXeMay: imagePaths,
+    anhXeMay: avatarList,
     giaTien: req.body.giaTien,
   });
   // Lưu đối tượng XeMay vào cơ sở dữ liệu
