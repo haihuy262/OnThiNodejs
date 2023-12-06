@@ -55,13 +55,15 @@
           const productName = row
             .getElementsByTagName("td")[0]
             .innerText.toLowerCase();
-
-          // So sánh tên sản phẩm với từ khóa tìm kiếm
-          if (productName.includes(searchTerm.toLowerCase())) {
-            row.style.display = ""; // Hiển thị nếu tìm thấy
-          } else {
-            row.style.display = "none"; // Ẩn nếu không tìm thấy
-          }
+          const manufacturer = row
+            .getElementsByTagName("td")[1]
+            .innerText.toLowerCase();
+          // Kiểm tra xem từ khóa tìm kiếm xuất hiện trong tên sản phẩm hoặc hãng sản xuất
+          const isMatch =
+            productName.includes(searchTerm.toLowerCase()) ||
+            manufacturer.includes(searchTerm.toLowerCase());
+          // Hiển thị hoặc ẩn dựa trên kết quả kiểm tra
+          row.style.display = isMatch ? "" : "none";
         }
       }
 
