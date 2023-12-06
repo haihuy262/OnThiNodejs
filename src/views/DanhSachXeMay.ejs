@@ -37,27 +37,33 @@
       </table>
     </div>
     <script>
-      $(document).ready(function () {
-        // Xác định đối tượng tìm kiếm
-        const searchInput = $("#searchInput");
-        // Xác định đối tượng bảng
-        const table = $("#xeMayTable");
-        // Xác định đối tượng dòng trong bảng
-        const rows = $("#xeMayTable tbody tr");
-        // Xử lý sự kiện khi người dùng nhập vào thanh tìm kiếm
-        searchInput.on("input", function () {
-          const searchTerm = $(this).val().toLowerCase();
-          // Lặp qua mỗi dòng trong bảng để ẩn hoặc hiển thị dựa trên kết quả tìm kiếm
-          rows.each(function () {
-            const rowText = $(this).text().toLowerCase();
-            if (rowText.includes(searchTerm)) {
-              $(this).show();
-            } else {
-              $(this).hide();
-            }
-          });
-        });
+      const searchInput = document.getElementById("searchInput");
+      searchInput.addEventListener("input", () => {
+        // Gọi hàm filterTable để lọc dữ liệu khi có sự thay đổi trong ô tìm kiếm
+        filterTable(searchInput.value.trim());
       });
+
+      // Hàm để lọc dữ liệu và cập nhật bảng
+      function filterTable(searchTerm) {
+        // Lấy danh sách sản phẩm từ thẻ tbody
+        const tableBody = document.getElementById("productTableBody");
+        const rows = tableBody.getElementsByTagName("tr");
+
+        // Duyệt qua từng dòng và ẩn/hiện dựa trên kết quả tìm kiếm
+        for (let i = 0; i < rows.length; i++) {
+          const row = rows[i];
+          const productName = row
+            .getElementsByTagName("td")[0]
+            .innerText.toLowerCase();
+
+          // So sánh tên sản phẩm với từ khóa tìm kiếm
+          if (productName.includes(searchTerm.toLowerCase())) {
+            row.style.display = ""; // Hiển thị nếu tìm thấy
+          } else {
+            row.style.display = "none"; // Ẩn nếu không tìm thấy
+          }
+        }
+      }
 
       // Khi trang web đã tải xong (DOMContentLoaded), thực hiện hàm này
       document.addEventListener("DOMContentLoaded", async () => {
