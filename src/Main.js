@@ -131,9 +131,9 @@ const postXeMay = async (req, res) => {
     giaTien: req.body.giaTien,
   });
   // Lưu đối tượng XeMay vào cơ sở dữ liệu
-  const result = await xeMays.save();
-  // Trả về kết quả
-  res.json(result);
+  await xeMays.save();
+  // Chuyển hướng người dùng đến trang "/danhSachXeMay" sau khi lưu thành công
+  res.redirect("/danhSachXeMay");
 };
 
 // Định nghĩa route POST để thêm mới thông tin về xe máy

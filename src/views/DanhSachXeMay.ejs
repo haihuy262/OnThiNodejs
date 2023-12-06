@@ -59,34 +59,41 @@
         });
       });
 
+      // Khi trang web đã tải xong (DOMContentLoaded), thực hiện hàm này
       document.addEventListener("DOMContentLoaded", async () => {
         try {
+          // Gửi yêu cầu GET đến endpoint "/api/danhSachXeMay/xemay"
           const response = await fetch("/api/danhSachXeMay/xemay", {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
             },
           });
-
+          // Nếu yêu cầu không thành công, ném lỗi và kết thúc
           if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+            throw new Error(`Lỗi HTTP! Trạng thái: ${response.status}`);
           }
-
+          // Chuyển đổi dữ liệu nhận được thành đối tượng JSON
           const data = await response.json();
-
+          // Gọi hàm populateTable để hiển thị dữ liệu lên bảng
           populateTable(data);
         } catch (error) {
-          console.error("Error fetching data:", error);
+          // Bắt lỗi nếu có lỗi trong quá trình lấy dữ liệu
+          console.error("Lỗi khi lấy dữ liệu:", error);
         }
-
+        // Hàm để điền dữ liệu vào bảng HTML
         function populateTable(data) {
+          // Lấy thẻ tbody của bảng theo ID "productTableBody"
           const tableBody = document.getElementById("productTableBody");
-
+          // Duyệt qua từng sản phẩm trong dữ liệu
           data.forEach((product) => {
+            // Tạo một dòng mới trong bảng
             const row = document.createElement("tr");
+            // Biến để lưu HTML của ảnh (avatar)
             let avatarHTML = "";
+            // Kiểm tra nếu avatar là một mảng (nhiều ảnh)
             if (Array.isArray(product.anhXeMay)) {
-              // Nếu avatar là một mảng (nhiều ảnh)
+              // Duyệt qua từng ảnh và thêm vào biến avatarHTML
               product.anhXeMay.forEach((image) => {
                 avatarHTML += `<img src="/images/${image}" style="width: 50px; height: 50px;">`;
               });
@@ -94,12 +101,14 @@
               // Nếu avatar là một chuỗi (một ảnh)
               avatarHTML = `<img src="/images/${product.anhXeMay}" style="width: 50px; height: 50px;">`;
             }
-            row.innerHTML = ` 
-            <td>${product.tenXeMay}</td>
-            <td>${product.hangSanXuat}</td>
-            <td>${avatarHTML}</td>
-            <td>${product.giaTien}</td>
+            // Điền thông tin sản phẩm vào dòng
+            row.innerHTML = `
+                <td>${product.tenXeMay}</td>
+                <td>${product.hangSanXuat}</td>
+                <td>${avatarHTML}</td>
+                <td>${product.giaTien}</td>
             `;
+            // Thêm dòng vào tbody của bảng
             tableBody.appendChild(row);
           });
         }
