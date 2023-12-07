@@ -36,6 +36,32 @@
         <tbody id="productTableBody"></tbody>
       </table>
     </div>
+    <div
+      class="modal fade"
+      id="productModal"
+      tabindex="-1"
+      aria-labelledby="productModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="productModalLabel">
+              Chi tiết sản phẩm
+            </h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body" id="productDetails">
+            <!-- Product details will be displayed here -->
+          </div>
+        </div>
+      </div>
+    </div>
     <script>
       const searchInput = document.getElementById("searchInput");
       searchInput.addEventListener("input", () => {
@@ -89,6 +115,31 @@
           // Bắt lỗi nếu có lỗi trong quá trình lấy dữ liệu
           console.error("Lỗi khi lấy dữ liệu:", error);
         }
+
+        function showProductDetails(product, avatarHTML) {
+          const productDetailsContainer =
+            document.getElementById("productDetails");
+          // Customize this section to display the product details as per your requirement
+          productDetailsContainer.innerHTML = `
+          <p><strong>Tên xe:</strong> ${product.tenXeMay}</p>
+          <p><strong>Hãng sản xuất:</strong> ${product.hangSanXuat}</p>
+          <p><strong>Ảnh xe máy:</strong> ${avatarHTML}</p>
+          <p><strong>Giá tiền:</strong> ${product.giaTien}</p>
+          <!-- Add more details as needed -->
+        `;
+        }
+
+        function showProductDetailsOnClick(product, avatarHTML) {
+          // Show the modal
+          const productModal = new bootstrap.Modal(
+            document.getElementById("productModal")
+          );
+          productModal.show();
+
+          // Populate modal with product details
+          showProductDetails(product, avatarHTML);
+        }
+
         // Hàm để điền dữ liệu vào bảng HTML
         function populateTable(data) {
           // Lấy thẻ tbody của bảng theo ID "productTableBody"
@@ -97,17 +148,21 @@
           data.forEach((product) => {
             // Tạo một dòng mới trong bảng
             const row = document.createElement("tr");
+            row.addEventListener("click", () => {
+              // Call the function to show product details
+              showProductDetailsOnClick(product, avatarHTML);
+            });
             // Biến để lưu HTML của ảnh (avatar)
             let avatarHTML = "";
             // Kiểm tra nếu avatar là một mảng (nhiều ảnh)
             if (Array.isArray(product.anhXeMay)) {
               // Duyệt qua từng ảnh và thêm vào biến avatarHTML
               product.anhXeMay.forEach((image) => {
-                avatarHTML += `<img src="/images/${image}" style="width: 50px; height: 50px;">`;
+                avatarHTML += `<img src="/images/${image}" style="width: 50px; height: 50px; margin-left: 5px;">`;
               });
             } else {
               // Nếu avatar là một chuỗi (một ảnh)
-              avatarHTML = `<img src="/images/${product.anhXeMay}" style="width: 50px; height: 50px;">`;
+              avatarHTML = `<img src="/images/${product.anhXeMay}" style="width: 50px; height: 50px; margin-left: 5px;">`;
             }
             // Điền thông tin sản phẩm vào dòng
             row.innerHTML = `
